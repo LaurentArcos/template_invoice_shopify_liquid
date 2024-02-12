@@ -4,6 +4,12 @@
       font-size: 10px;
       color: #333;
   }
+  
+  .container {
+    padding: 20px;
+  
+  }
+  
   strong {
   text-transform: uppercase;
   }
@@ -110,190 +116,191 @@
   
   </style>
   
-  
-  <div id="invoice-header">
-    <div class="shop-logo">
-      <img src="https://cdn.shopify.com/s/files/1/0809/7965/7027/files/logo_facture.png?v=1707485861" alt="Logo de la Boutique" style="max-width: 100px;">
-    </div>
-    <div class="shop-info">
-      <strong class="invoice-title">facture</strong>
-      <p class="invoice-info">
-        NUMERO : {{ order_name }}<br />
-        DATE : {{ created_at | date: "%d/%m/%Y" }}<br/>
-      </p>
-    </div>
-  </div>
-  
-  
-  <div class="address-container">
-    <div class="billing-info address-info">
-      <h3 class="section-title">Adresse de facturation</h3>
-      {{ billing_address.name }}<br/>
-      {{ billing_address | format_address }}<br/>
-      {{ billing_address.phone }}
-    </div>
-  
-    {% if shipping_address %}
-      <div class="shipping-info address-info">
-        <h3 class="section-title">Adresse de livraison</h3>
-        {{ shipping_address.name }}<br/>
-        {{ shipping_address | format_address }}<br/>
-        {{ shipping_address.phone }}
+  <div class="container">
+      <div id="invoice-header">
+        <div class="shop-logo">
+          <img src="https://cdn.shopify.com/s/files/1/0809/7965/7027/files/logo_facture.png?v=1707485861" alt="Logo de la Boutique" style="max-width: 100px;">
+        </div>
+        <div class="shop-info">
+          <strong class="invoice-title">facture</strong>
+          <p class="invoice-info">
+            NUMERO : {{ order_name }}<br />
+            DATE : {{ created_at | date: "%d/%m/%Y" }}<br/>
+          </p>
+        </div>
       </div>
-    {% endif %}
-  </div>
-  
-  
-  <table class="table-tabular" style="margin-bottom: 2em;">
-    <thead>
-      <tr>
-        <th>Détails de la commande</th>
-        <th>Transporteur</th>
-        <th>Mode de paiement</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr>
-          <td>
-              NUMERO : {{ order_name }}<br/>
-             <!-- {{ order_number }}<br/> -->
-              DATE : {{ date | date: "%d/%m/%Y %H:%M" }}<br/>
-          </td>
-          <td>
-              A vérifier<br/>
-              {{ shipping_method.title }}<br/>
-              {{ shipping_line.title }}<br/>
-          </td>
-          <td>
-              A vérifier<br/>
-              {{ transaction.gateway | payment_method }}</td>
-        </tr>
-    </tbody>
-  </table>
-  
-  <table class="table-tabular" style="width: 100%;">
-    <thead>
-      <tr>
-        <th style="text-align: left;">Référence</th>
-        <th style="text-align: left;">Produit</th>
-        <th style="text-align: right;">Prix unitaire HT</th>
-        <th style="text-align: right;">Prix unitaire TTC</th>
-        <th style="text-align: right;">Qté</th>
-        <th style="text-align: right;">TOTAL TTC</th>
-      </tr>
-    </thead>
-    
-  <tbody>
-  {% for line_item in line_items %}
-    {% assign total_tax_per_item = 0 %}
-    {% for tax_line in line_item.tax_lines %}
-      {% assign total_tax_per_item = total_tax_per_item | plus: tax_line.price %}
-    {% endfor %}
-  
-    {% assign price_ht_before_discount = line_item.original_price | minus: total_tax_per_item %}
-    {% assign price_ht_after_discount = line_item.price | minus: total_tax_per_item %}
-  
-    <tr>
-      <td style="text-align: left;">Réf à créer</td>
-      <td style="text-align: left;"><b>{{ line_item.title }}</b></td>
-      <td style="text-align: right;">
-      {{ price_ht_after_discount | money_without_currency }} €
-      </td>
-      <td style="text-align: right;">
-            {{ line_item.price | money_without_currency }} €<br/>
-        {% if line_item.original_price != line_item.price %}
-          <s>{{ line_item.original_price | money_without_currency }} €</s><br/>
+      
+      
+      <div class="address-container">
+        <div class="billing-info address-info">
+          <h3 class="section-title">Adresse de facturation</h3>
+          {{ billing_address.name }}<br/>
+          {{ billing_address | format_address }}<br/>
+          {{ billing_address.phone }}
+        </div>
+      
+        {% if shipping_address %}
+          <div class="shipping-info address-info">
+            <h3 class="section-title">Adresse de livraison</h3>
+            {{ shipping_address.name }}<br/>
+            {{ shipping_address | format_address }}<br/>
+            {{ shipping_address.phone }}
+          </div>
         {% endif %}
-  
-      </td>
-      <td style="text-align: right;">{{ line_item.quantity }}</td>
-      <td style="text-align: right;">
-      {{ line_item.price | times: line_item.quantity | money_without_currency }} €<br/>
-        {% if line_item.original_price != line_item.price %}
-          <s>{{ line_item.original_price | times: line_item.quantity | money_without_currency }} €</s><br/>
-        {% endif %}
-      </td>
-    </tr>
-  {% endfor %}
-  </tbody>
-  
-  </table>
-  
-  
-  
-  <div style="text-align: right; width: 30%; margin-right: 1em; margin-left: auto; margin-top: 2em; margin-bottom: 2em;">
-  
-  {% assign subtotal_price_before_discounts = 0 %}
-  {% for line_item in line_items %}
-    {% assign line_total_before_discount = line_item.original_price | times: line_item.quantity %}
-    {% assign subtotal_price_before_discounts = subtotal_price_before_discounts | plus: line_total_before_discount %}
-  {% endfor %}
-  
-    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-      <span><b>Total produits:</b></span>
-      <span>{{ subtotal_price_before_discounts | money_without_currency }} €</span>
-    </div>
-    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-      <span><b>Réduction:</b></span>
-      <span>-{{ total_discounts | money_without_currency }} €</span>
-    </div>
-    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-      <span><b>Frais d'expédition:</b></span>
-      <span>{{ shipping_price | money_without_currency }} €</span>
-    </div>
-    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-      <span><b>Total TTC:</b></span>
-      <span><b>{{ total_price | money_without_currency }} €</b></span>
-    </div>
-    {% assign total_tax_rate = 0 %}
-    {% assign total_tax_value = 0 %}
-    {% for tax_line in tax_lines %}
-      {% assign total_tax_rate = total_tax_rate | plus: tax_line.rate %}
-      {% assign total_tax_value = total_tax_value | plus: tax_line.price %}
-    {% endfor %}
-    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-      <span><i>TVA ({{ total_tax_rate | times: 100 | round: 2 }}%):</i></span>
-      <span><i>{{ total_tax_value | money_without_currency }} €</i></span>
-    </div>
-    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-      <span><i>Total HT:</i></span>
-      <span><i>{{ total_price | minus: total_tax_value | money_without_currency }} €</i></span>
-    </div>
-  </div>
-  
-  
-  <table class="table-tabular" style="width: 100%; table-layout: fixed;">
-    <thead>
-      <tr>
-        <th style="text-align: left;">Détail des taxes</th>
-        <th style="text-align: right;">Taux</th>
-        <th style="text-align: right;">Total HT</th>
-        <th style="text-align: right;">TVA</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr>
-          <td style="text-align: left;">Produits</td>
-          <td style="text-align: right;">{{ total_tax_rate | times: 100 | round: 2 }}%</td>
-          <td style="text-align: right;">{{ total_price | minus: total_tax_value | money_without_currency }} €</td>
-          <td style="text-align: right;">{{ total_tax_value | money_without_currency }} €</td>
-        </tr>
-    </tbody>
-  </table>
-  
-  
-  <div class="document-footer">
-      <div style="text-align: center; margin: 40px 0 20px; font-size: 14px;"> <!-- Ajustez ici pour l'espace autour du bloc -->
-        <p><strong>MERCI POUR VOTRE COMMANDE</strong></p>
-        <p style="font-size: 10px; font-style: italic; margin-top: 3px; margin-bottom: 3px;">Une copie électronique de votre facture est conservée sur votre compte</p>
-        <p style="font-size: 10px; font-style: italic; margin-top: 3px; margin-bottom: 3px;">Pour y accéder, rendez-vous sur <a href="http://www.seagale.fr" style="color: #15184C;">www.seagale.fr</a></p>
       </div>
-  </div>
-  
-  <div class="document-footer">
-    <footer>
-      <p>SEAGALE SAS</p>
-      <p>42 rue Picot 83000 Toulon France</p>
-      <p>800 236 481 RCS Toulon - TVA FR 01 800 236 481 - Code NAF 4771Z - Société par actions simplifiée au capital de 20.000 euros</p>
-    </footer>
+      
+      
+      <table class="table-tabular" style="margin-bottom: 2em;">
+        <thead>
+          <tr>
+            <th>Détails de la commande</th>
+            <th>Transporteur</th>
+            <th>Mode de paiement</th>
+          </tr>
+        </thead>
+        <tbody>
+            <tr>
+              <td>
+                  NUMERO : {{ order_name }}<br/>
+                 <!-- {{ order_number }}<br/> -->
+                  DATE : {{ date | date: "%d/%m/%Y %H:%M" }}<br/>
+              </td>
+              <td>
+                  A vérifier<br/>
+                  {{ shipping_method.title }}<br/>
+                  {{ shipping_line.title }}<br/>
+              </td>
+              <td>
+                  A vérifier<br/>
+                  {{ transaction.gateway | payment_method }}</td>
+            </tr>
+        </tbody>
+      </table>
+      
+      <table class="table-tabular" style="width: 100%;">
+        <thead>
+          <tr>
+            <th style="text-align: left;">Référence</th>
+            <th style="text-align: left;">Produit</th>
+            <th style="text-align: right;">Prix unitaire HT</th>
+            <th style="text-align: right;">Prix unitaire TTC</th>
+            <th style="text-align: right;">Qté</th>
+            <th style="text-align: right;">TOTAL TTC</th>
+          </tr>
+        </thead>
+        
+      <tbody>
+      {% for line_item in line_items %}
+        {% assign total_tax_per_item = 0 %}
+        {% for tax_line in line_item.tax_lines %}
+          {% assign total_tax_per_item = total_tax_per_item | plus: tax_line.price %}
+        {% endfor %}
+      
+        {% assign price_ht_before_discount = line_item.original_price | minus: total_tax_per_item %}
+        {% assign price_ht_after_discount = line_item.price | minus: total_tax_per_item %}
+      
+        <tr>
+          <td style="text-align: left;">Réf à créer</td>
+          <td style="text-align: left;"><b>{{ line_item.title }}</b></td>
+          <td style="text-align: right;">
+          {{ price_ht_after_discount | money_without_currency }} €
+          </td>
+          <td style="text-align: right;">
+                {{ line_item.price | money_without_currency }} €<br/>
+            {% if line_item.original_price != line_item.price %}
+              <s>{{ line_item.original_price | money_without_currency }} €</s><br/>
+            {% endif %}
+      
+          </td>
+          <td style="text-align: right;">{{ line_item.quantity }}</td>
+          <td style="text-align: right;">
+          {{ line_item.price | times: line_item.quantity | money_without_currency }} €<br/>
+            {% if line_item.original_price != line_item.price %}
+              <s>{{ line_item.original_price | times: line_item.quantity | money_without_currency }} €</s><br/>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+      
+      </table>
+      
+      
+      
+      <div style="text-align: right; width: 30%; margin-right: 1em; margin-left: auto; margin-top: 2em; margin-bottom: 2em;">
+      
+      {% assign subtotal_price_before_discounts = 0 %}
+      {% for line_item in line_items %}
+        {% assign line_total_before_discount = line_item.original_price | times: line_item.quantity %}
+        {% assign subtotal_price_before_discounts = subtotal_price_before_discounts | plus: line_total_before_discount %}
+      {% endfor %}
+      
+        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+          <span><b>Total produits:</b></span>
+          <span>{{ subtotal_price_before_discounts | money_without_currency }} €</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+          <span><b>Réduction:</b></span>
+          <span>-{{ total_discounts | money_without_currency }} €</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+          <span><b>Frais d'expédition:</b></span>
+          <span>{{ shipping_price | money_without_currency }} €</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+          <span><b>Total TTC:</b></span>
+          <span><b>{{ total_price | money_without_currency }} €</b></span>
+        </div>
+        {% assign total_tax_rate = 0 %}
+        {% assign total_tax_value = 0 %}
+        {% for tax_line in tax_lines %}
+          {% assign total_tax_rate = total_tax_rate | plus: tax_line.rate %}
+          {% assign total_tax_value = total_tax_value | plus: tax_line.price %}
+        {% endfor %}
+        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+          <span><i>TVA ({{ total_tax_rate | times: 100 | round: 2 }}%):</i></span>
+          <span><i>{{ total_tax_value | money_without_currency }} €</i></span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+          <span><i>Total HT:</i></span>
+          <span><i>{{ total_price | minus: total_tax_value | money_without_currency }} €</i></span>
+        </div>
+      </div>
+      
+      
+      <table class="table-tabular" style="width: 100%; table-layout: fixed;">
+        <thead>
+          <tr>
+            <th style="text-align: left;">Détail des taxes</th>
+            <th style="text-align: right;">Taux</th>
+            <th style="text-align: right;">Total HT</th>
+            <th style="text-align: right;">TVA</th>
+          </tr>
+        </thead>
+        <tbody>
+            <tr>
+              <td style="text-align: left;">Produits</td>
+              <td style="text-align: right;">{{ total_tax_rate | times: 100 | round: 2 }}%</td>
+              <td style="text-align: right;">{{ total_price | minus: total_tax_value | money_without_currency }} €</td>
+              <td style="text-align: right;">{{ total_tax_value | money_without_currency }} €</td>
+            </tr>
+        </tbody>
+      </table>
+      
+      
+      <div class="document-footer">
+          <div style="text-align: center; margin: 40px 0 20px; font-size: 14px;"> <!-- Ajustez ici pour l'espace autour du bloc -->
+            <p><strong>MERCI POUR VOTRE COMMANDE</strong></p>
+            <p style="font-size: 10px; font-style: italic; margin-top: 3px; margin-bottom: 3px;">Une copie électronique de votre facture est conservée sur votre compte</p>
+            <p style="font-size: 10px; font-style: italic; margin-top: 3px; margin-bottom: 3px;">Pour y accéder, rendez-vous sur <a href="http://www.seagale.fr" style="color: #15184C;">www.seagale.fr</a></p>
+          </div>
+      </div>
+      
+      <div class="document-footer">
+        <footer>
+          <p>SEAGALE SAS</p>
+          <p>42 rue Picot 83000 Toulon France</p>
+          <p>800 236 481 RCS Toulon - TVA FR 01 800 236 481 - Code NAF 4771Z - Société par actions simplifiée au capital de 20.000 euros</p>
+        </footer>
+      </div>
   </div>
