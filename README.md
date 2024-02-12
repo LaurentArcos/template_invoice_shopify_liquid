@@ -1,1 +1,1 @@
-# template_invoice_shopify_liquid
+# template pour factures FR sur Shopify
