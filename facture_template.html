@@ -235,19 +235,19 @@
         {% assign subtotal_price_before_discounts = subtotal_price_before_discounts | plus: line_total_before_discount %}
       {% endfor %}
       
-        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
           <span><b>Total produits:</b></span>
           <span>{{ subtotal_price_before_discounts | money_without_currency }} €</span>
         </div>
-        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
           <span><b>Réduction:</b></span>
           <span>-{{ total_discounts | money_without_currency }} €</span>
         </div>
-        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
           <span><b>Frais d'expédition:</b></span>
           <span>{{ shipping_price | money_without_currency }} €</span>
         </div>
-        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
           <span><b>Total TTC:</b></span>
           <span><b>{{ total_price | money_without_currency }} €</b></span>
         </div>
@@ -257,35 +257,49 @@
           {% assign total_tax_rate = total_tax_rate | plus: tax_line.rate %}
           {% assign total_tax_value = total_tax_value | plus: tax_line.price %}
         {% endfor %}
-        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
           <span><i>TVA ({{ total_tax_rate | times: 100 | round: 2 }}%):</i></span>
           <span><i>{{ total_tax_value | money_without_currency }} €</i></span>
         </div>
-        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
           <span><i>Total HT:</i></span>
           <span><i>{{ total_price | minus: total_tax_value | money_without_currency }} €</i></span>
         </div>
       </div>
       
       
-      <table class="table-tabular" style="width: 100%; table-layout: fixed;">
-        <thead>
+    {% if total_tax_value == 0 %}
+    <p style="text-align: right; margin-top: 50px; margin-right: 1em;">Exonération de TVA, article 262 I du CGI</p>
+  {% else %}
+    <table class="table-tabular" style="width: 100%; table-layout: fixed;">
+      <thead>
+        <tr>
+          <th style="text-align: left;">Détail des taxes</th>
+          <th style="text-align: right;">Taux</th>
+          <th style="text-align: right;">Total HT</th>
+          <th style="text-align: right;">TVA</th>
+        </tr>
+      </thead>
+      <tbody>
           <tr>
-            <th style="text-align: left;">Détail des taxes</th>
-            <th style="text-align: right;">Taux</th>
-            <th style="text-align: right;">Total HT</th>
-            <th style="text-align: right;">TVA</th>
+            <td style="text-align: left;">Produits</td>
+            <td style="text-align: right;">{{ total_tax_rate | times: 100 | round: 2 }}%</td>
+            <td style="text-align: right;">{{ total_price | minus: total_tax_value | money_without_currency }} €</td>
+            <td style="text-align: right;">{{ total_tax_value | money_without_currency }} €</td>
           </tr>
-        </thead>
-        <tbody>
-            <tr>
-              <td style="text-align: left;">Produits</td>
-              <td style="text-align: right;">{{ total_tax_rate | times: 100 | round: 2 }}%</td>
-              <td style="text-align: right;">{{ total_price | minus: total_tax_value | money_without_currency }} €</td>
-              <td style="text-align: right;">{{ total_tax_value | money_without_currency }} €</td>
-            </tr>
-        </tbody>
-      </table>
+          {% if shipping_price > 0 %}
+          {% assign shipping_tax_value = shipping_price | times: total_tax_rate %}
+          {% assign shipping_ht = shipping_price | minus: shipping_tax_value %}
+          <tr>
+            <td style="text-align: left;">Frais d'expédition</td>
+            <td style="text-align: right;">{{ total_tax_rate | times: 100 | round: 2 }}%</td>
+            <td style="text-align: right;">{{ shipping_ht | money_without_currency }} €</td>
+            <td style="text-align: right;">{{ shipping_tax_value | money_without_currency }} €</td>
+          </tr>
+          {% endif %}
+      </tbody>
+    </table>
+  {% endif %}
       
       
       <div class="document-footer">
